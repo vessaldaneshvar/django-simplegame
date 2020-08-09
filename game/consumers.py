@@ -98,7 +98,7 @@ class DotsConsumerGame(WebsocketConsumer):
         self.group_name = self.scope['url_route']['kwargs']['secretgroupname']
         async_to_sync(self.channel_layer.group_add)(
             self.group_name,
-            self.channel_namegit 
+            self.channel_name
         )
         self.accept()
 
