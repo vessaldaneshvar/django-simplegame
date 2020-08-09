@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"> -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css
+
+
+
+    ">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container d-inline">
+        <div class="container d-flex justify-content-center">
+            <span class="badge badge-warning" id="status-span" style="color: rgb(255, 0, 0);font-size: 25px;">
+                STATUS : Input Group Name AND Click Join
+            </span> 
+        </div>
+        <div class="container d-flex justify-content-center">
+            <button id='button-paper'disabled="disabled">
+                <i name="paper" class="fas fa-hand-paper fa-6x" style="color: rgb(238, 87, 87);"></i>
+            </button>
+            <button id='button-rock'disabled="disabled">
+                <i name="rock" class="fas fa-hand-rock fa-6x" style="color: rgb(9, 121, 250);"></i>
+            </button>
+            <button id='button-scissors' disabled="disabled">
+                <i name="scissors" class="fas fa-hand-scissors fa-6x" style="color: rgb(181, 255, 83);"></i>
+            </button>
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center" style="font-size: 40px;">Player 1 Score :<div id="score-red" style="color: rgb(238, 98, 98);"> 0 </div></div>
+    <div class="container d-flex justify-content-center" style="font-size: 40px;">Player 2 Score :<div id="score-blue" style="color: rgb(22, 120, 247);"> 0 </div></div>
+    <div class="container d-flex justify-content-center" style="font-size: 40px;">Result :<div id="result" style="color: rgb(60, 255, 125);"></div></div></div>
+    <div class="container d-flex justify-content-center">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">@</span>
+            </div>
+            <input id='group_name' type="text" class="form-control" placeholder="GroupName" aria-label="GroupUser" aria-describedby="basic-addon1">
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center">
+        <button id='button-join' class="btn btn-primary" type="button">Join</button>
+    </div>
+        
+
+        
+        
+
+    <script>
+        console.log("salam")
+        document.getElementById('button-join').addEventListener('click',main)
+        game_play_counter = 0
+        player1_choice = '';
+        player2_choice = '';
+        function main() {
+            document.getElementById('button-join').disabled = true;
+            document.getElementById('status-span').innerText = "STATUS : Awaiting for competitor "
+            const start_game_socket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/game/rock/' 
+            + document.getElementById('group_name').value
+            + '/'
+            );
+        start_game_socket.onerror = function(e){
+            console.log(e)
+        }
+        start_game_socket.onmessage = function(e) {
+            data_json = JSON.parse(e.data);
+            if (data_json.type === 'initiated_game') {
+                player1 = Object.entries(data_json.players)[0][0] // red
+                player2 = Object.entries(data_json.players)[1][0] // blue
+                if (data_json.you === player1) {
+                    you = 'player1'
+                }
+                else if (data_json.you === player2) {
+                    you = 'player2'
+                }
+                document.getElementById('status-span').innerText = "STATUS : You IS " + you
+                document.getElementById("button-paper").disabled = false;
+                document.getElementById("button-rock").disabled = false;
+                document.getElementById("button-scissors").disabled = false;
+                document.getElementById("button-paper").addEventListener("click", function(e){ myscript(e, start_game_socket);});
+                document.getElementById("button-rock").addEventListener("click", function(e){ myscript(e, start_game_socket);});
+                document.getElementById("button-scissors").addEventListener("click", function(e){ myscript(e, start_game_socket);});
+                }
+            else if (data_json.type === 'game_play'){
+                game_play_counter = game_play_counter + 1
+                if (player1 in data_json) {
+                    player1_choice = data_json[player1];
+                }
+                else if (player2 in data_json) {
+                    player2_choice = data_json[player2];
+                }
+                if (player1_choice && player2_choice) {
+                    console.log('judge')
+                    judge(player1_choice,player2_choice);
+                    player1_choice = '';
+                    player2_choice = ''; 
+                    document.getElementById("button-paper").disabled = false;
+                    document.getElementById("button-rock").disabled = false;
+                    document.getElementById("button-scissors").disabled = false;
+                }
+                // judge(player1_choice,player2_choice);
+                
+                }
+            };
+        }
+        
+        function myscript(params,start_game_socket) {
+            document.getElementById("button-paper").disabled = true;
+            document.getElementById("button-rock").disabled = true;
+            document.getElementById("button-scissors").disabled = true;
+            obj = params.target;
+            param_choice = obj.getAttribute('name');
+            start_game_socket.send(param_choice);
+        }
+        function judge(param_red,param_blue){
+            if (param_red == "scissors" && param_blue == "paper"){
+                score_value = document.getElementById('score-red').innerHTML;
+                score_value = Number(score_value);
+                score_value = score_value + 1;
+                document.getElementById('score-red').innerHTML = score_value;
+                document.getElementById('result').innerHTML = "RED - Win";
+            }
+
+            else if (param_red == "rock" && param_blue == "paper"){
+                score_value = document.getElementById('score-blue').innerHTML;
+                score_value = Number(score_value);
+                score_value = score_value + 1;
+                document.getElementById('score-blue').innerHTML = score_value;
+                document.getElementById('result').innerHTML = "BLUE - Win";
+
+            }
+            else if (param_red == "scissors" && param_blue == "rock"){
+                score_value = document.getElementById('score-blue').innerHTML;
+                score_value = Number(score_value);
+                score_value = score_value + 1;
+                document.getElementById('score-blue').innerHTML = score_value;
+                document.getElementById('result').innerHTML = "BLUE - Win";
+
+            }
+            else if (param_red == "paper" && param_blue == "rock"){
+                score_value = document.getElementById('score-red').innerHTML;
+                score_value = Number(score_value);
+                score_value = score_value + 1;
+                document.getElementById('score-red').innerHTML = score_value;
+                document.getElementById('result').innerHTML = "RED - Win";
+
+            }
+            else if (param_red == "paper" && param_blue == "scissors"){
+                score_value = document.getElementById('score-blue').innerHTML;
+                score_value = Number(score_value);
+                score_value = score_value + 1;
+                document.getElementById('score-blue').innerHTML = score_value;
+                document.getElementById('result').innerHTML = "BLUE - Win";
+
+            }
+            else if (param_red == "rock" && param_blue == "scissors"){
+                score_value = document.getElementById('score-red').innerHTML;
+                score_value = Number(score_value);
+                score_value = score_value + 1;
+                document.getElementById('score-red').innerHTML = score_value;
+                document.getElementById('result').innerHTML = "RED - Win";
+
+            }
+            else if (param_red == param_blue ){
+                document.getElementById('result').innerHTML = "Draw";
+            }
+            
+        }
+    </script>
+</body>
+</html>
