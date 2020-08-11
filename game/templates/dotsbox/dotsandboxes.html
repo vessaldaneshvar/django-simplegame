@@ -19,7 +19,7 @@
 		<h1>Dots and Boxes</h1>
 		<div class="row">
 			<div class="col-md">
-				<div id="playing-area"></div>
+				<div id="playing-area" hidden></div>
 			</div>
 			<div class="col-md">
 				<div class="form-group">
@@ -87,11 +87,12 @@
 				data_init_game = JSON.parse(e.data)
 				if (data_init_game.type === 'initiated_game') {
 					restartbtn.innerText = "Game Started : Player" + data_init_game.player
+					document.getElementById("playing-area").hidden = false;
 					if (data_init_game.player == 1){
-						document.getElementById('agent2').value = "ws://" +window.location.host + '/game/dotsandbox/action/' + data_init_game.secret_group_name + '/'
+						document.getElementById('agent2').value = "ws://" + window.location.host + '/game/dotsandbox/action/' + data_init_game.secret_group_name + '/'
 					}
 					else if (data_init_game.player == 2){
-						document.getElementById('agent1').value = "ws://" +window.location.host + '/game/dotsandbox/action/' + data_init_game.secret_group_name + '/'
+						document.getElementById('agent1').value = "ws://" + window.location.host + '/game/dotsandbox/action/' + data_init_game.secret_group_name + '/'
 					}
 					restart();
 				}
