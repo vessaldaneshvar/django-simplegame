@@ -3,6 +3,8 @@ from asgiref.sync import async_to_sync
 from hashlib import sha256
 import json
 import uuid
+from . import models
+
 class RockConsumer(WebsocketConsumer):
     def connect(self):
         self.group_name = self.scope['url_route']['kwargs']['groupname']
@@ -114,7 +116,15 @@ class DotsConsumerGame(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         if text_data_json['type'] == 'start':
             self.player = text_data_json['player']
-        elif text_data_json['type'] == 'action':
+        
+        elif (text_data_json['type'] == 'action'):
+            if text_data_json['player'] != self.player:
+                async_to_sync(self.channel_layer.group_send)(
+                    self.group_name,
+                    {'type' : 'game_action',"location":text_data_json['location'],'orientation':text_data_json["orientation"],'channel_name':self.channel_name}
+                )
+    
+        elif (text_data_json['type'] == 'end'):
             if text_data_json['player'] != self.player:
                 async_to_sync(self.channel_layer.group_send)(
                     self.group_name,
